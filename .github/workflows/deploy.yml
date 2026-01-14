@@ -27,6 +27,6 @@ jobs:
       uses: azure/arm-deploy@v2
       with:
         scope: resourcegroup
-        resourceGroupName: rg-app-film-gallery-dev
+        resourceGroupName: rg-secure-cloud-native-gallery-dev
         template: infra/main.bicep
         parameters: storageAccountName=filmphoto${{ github.run_id }}
