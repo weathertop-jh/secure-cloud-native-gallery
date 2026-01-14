@@ -12,16 +12,15 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    env:
-      # Use a clean Azure config dir for this job (avoids MSAL cache conflicts)
-      AZURE_CONFIG_DIR: ${{ runner.temp }}/.azure
-
     steps:
     - name: Checkout repo
       uses: actions/checkout@v4
 
-    - name: Clear Azure CLI cache (just in case)
-      run: rm -rf "$AZURE_CONFIG_DIR"
+    - name: Set AZURE_CONFIG_DIR (clean cache)
+      run: |
+        echo "AZURE_CONFIG_DIR=$RUNNER_TEMP/.azure" >> $GITHUB_ENV
+        rm -rf "$RUNNER_TEMP/.azure"
+        mkdir -p "$RUNNER_TEMP/.azure"
 
     - name: Azure login via OIDC
       uses: azure/login@v2
