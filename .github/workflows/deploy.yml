@@ -23,10 +23,13 @@ jobs:
         tenant-id: ${{ secrets.AZURE_TENANT_ID }}
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-    - name: Deploy Bicep
-      uses: azure/arm-deploy@v2
+    - name: Deploy Bicep (Azure CLI)
+      uses: azure/cli@v2
       with:
-        scope: resourcegroup
-        resourceGroupName: rg-secure-cloud-native-gallery-dev
-        template: infra/main.bicep
-        parameters: storageAccountName=filmphoto${{ github.run_id }}
+        azcliversion: 2.57.0
+        inlineScript: |
+          az deployment group create \
+            --resource-group rg-secure-cloud-native-gallery-dev \
+            --template-file infra/main.bicep \
+            --parameters storageAccountName=filmph${{ github.run_number }}
+
