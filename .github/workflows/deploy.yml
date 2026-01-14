@@ -12,9 +12,16 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    env:
+      # Use a clean Azure config dir for this job (avoids MSAL cache conflicts)
+      AZURE_CONFIG_DIR: ${{ runner.temp }}/.azure
+
     steps:
     - name: Checkout repo
       uses: actions/checkout@v4
+
+    - name: Clear Azure CLI cache (just in case)
+      run: rm -rf "$AZURE_CONFIG_DIR"
 
     - name: Azure login via OIDC
       uses: azure/login@v2
@@ -24,12 +31,16 @@ jobs:
         subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
     - name: Deploy Bicep (Azure CLI)
-      uses: azure/cli@v2
-      with:
-        azcliversion: 2.57.0
-        inlineScript: |
-          az deployment group create \
-            --resource-group rg-secure-cloud-native-gallery-dev \
-            --template-file infra/main.bicep \
-            --parameters storageAccountName=filmph${{ github.run_number }}
+      run: |
+        set -euo pipefail
+        suffix="$(date +%s)$(openssl rand -hex 2)"
+        sa_name="filmph${suffix}"
+        sa_name="${sa_name:0:24}"
+        echo "Using storage account name: ${sa_name}"
 
+        az bicep install >/dev/null 2>&1 || true
+        az deployment group create \
+          --resource-group rg-secure-cloud-native-gallery-dev \
+          --template-file infra/main.bicep \
+          --parameters storageAccountName="${sa_name}" \
+          --verbose
