@@ -13,8 +13,8 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      RESOURCE_GROUP: <rg-secure-cloud-native-gallery-dev>
-      STORAGE_ACCOUNT_NAME: <filmph17684320178cd3>
+      RESOURCE_GROUP: rg-secure-cloud-native-gallery-dev
+      STORAGE_ACCOUNT_NAME: filmph17684320178cd3
 
     steps:
     - name: Checkout repo
