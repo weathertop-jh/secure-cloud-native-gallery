@@ -1,4 +1,4 @@
-name: Deploy Azure Infrastructure
+name: Deploy Azure Infrastructure and Site
 
 on:
   push:
@@ -11,6 +11,10 @@ permissions:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+
+    env:
+      RESOURCE_GROUP: <rg-secure-cloud-native-gallery-dev>
+      STORAGE_ACCOUNT_NAME: <filmph17684320178cd3>
 
     steps:
     - name: Checkout repo
@@ -35,11 +39,21 @@ jobs:
         suffix="$(date +%s)$(openssl rand -hex 2)"
         sa_name="filmph${suffix}"
         sa_name="${sa_name:0:24}"
-        echo "Using storage account name: ${sa_name}"
+        echo "Generated storage name (ignored for site upload): ${sa_name}"
 
         az bicep install >/dev/null 2>&1 || true
         az deployment group create \
-          --resource-group rg-secure-cloud-native-gallery-dev \
+          --resource-group "$RESOURCE_GROUP" \
           --template-file infra/main.bicep \
           --parameters storageAccountName="${sa_name}" \
           --verbose
+
+    - name: Upload site to $web
+      run: |
+        set -euo pipefail
+        az storage blob upload-batch \
+          --account-name "$STORAGE_ACCOUNT_NAME" \
+          --destination '$web' \
+          --source site \
+          --overwrite \
+          --auth-mode login
